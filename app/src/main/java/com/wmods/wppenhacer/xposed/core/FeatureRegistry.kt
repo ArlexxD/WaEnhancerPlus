@@ -3,7 +3,7 @@ package com.wmods.wppenhacer.xposed.core
 import com.wmods.wppenhacer.xposed.features.customization.BubbleColors
 import com.wmods.wppenhacer.xposed.features.customization.ContactVerify
 import com.wmods.wppenhacer.xposed.features.customization.CustomThemeV2
-import com.wmods.wppenhacer.xposed.features.customization.CustomTime
+// import com.wmods.wppenhacer.xposed.features.customization.CustomTime // temporarily disabled (broke V2.26.47.9 beta)
 import com.wmods.wppenhacer.xposed.features.customization.CustomToolbar
 import com.wmods.wppenhacer.xposed.features.customization.CustomView
 import com.wmods.wppenhacer.xposed.features.customization.DefaultEmoji
@@ -110,7 +110,7 @@ internal object FeatureRegistry {
         NewChat::class.java,
         Others::class.java,
         PinnedLimit::class.java,
-        CustomTime::class.java,
+        // CustomTime::class.java, // temporarily disabled (broke V2.26.47.9 beta)
         ShareLimit::class.java,
         StatusDownload::class.java,
         ViewOnce::class.java,

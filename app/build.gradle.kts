@@ -40,8 +40,8 @@ android {
         minSdk = 28
         //noinspection OldTargetApi
         targetSdk = 34
-        versionCode = 167
-        versionName = "1.6.7 ($gitHash)"
+        versionCode = 168
+        versionName = "1.6.8 ($gitHash)"
         multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -144,11 +144,11 @@ android {
 androidComponents {
     onVariants { variant ->
         val appName = when (variant.flavorName) {
-            "business" -> "WaEnhancer-Business"
-            else -> "WaEnhancer"
+            "business" -> "WaEnhancer-Business-u"
+            else -> "WaEnhancer-u"
         }
         variant.outputs.forEach { output ->
-            output.outputFileName.set(output.versionName.map { "$appName-$it.apk" })
+            output.outputFileName.set(output.versionName.map { "$appName-$it-ArlexxD.apk" })
         }
 
         // Hotfix: YukiHookAPI's KSP generates META-INF/xposed/*, so the java resource
