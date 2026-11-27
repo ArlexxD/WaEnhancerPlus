@@ -16,8 +16,9 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
 
     companion object {
         private const val LATEST_RELEASE_API =
-            "https://api.github.com/repos/Waenhancer-Dev/WaEnhancer/releases/latest"
-        private const val TELEGRAM_UPDATE_URL = "https://t.me/waenhancher"
+            "https://api.github.com/repos/ArlexxD/WaEnhancerPlus/releases/latest"
+        private const val UPDATE_URL =
+            "https://github.com/ArlexxD/WaEnhancerPlus/releases/latest"
 
         private val httpClient: OkHttpClient by lazy {
             OkHttpClient.Builder()
@@ -34,7 +35,7 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
                 .url(LATEST_RELEASE_API)
                 .build()
 
-            val hash: String
+            val version: String
             val changelog: String
             val publishedAt: String
 
@@ -43,16 +44,20 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
 
                 val content = response.body.string()
                 val release = JSONObject(content)
-                val tagName = release.optString("tag_name", "")
+                val tagName = release.optString("tag_name", "").trim()
 
                 if (tagName.isBlank()) return
 
-                hash = tagName.split("-")[1].trim()
+                version = if (tagName.contains("-")) {
+                    tagName.substringAfter("-").trim()
+                } else {
+                    tagName.removePrefix("v").removePrefix("V").trim()
+                }
                 changelog = release.optString("body", "No changelog available.").trim()
                 publishedAt = release.optString("published_at", "")
             }
 
-            if (hash.isBlank()) return
+            if (version.isBlank()) return
 
             val packageInfo = try {
                 mActivity.packageManager.getPackageInfo(BuildConfig.APPLICATION_ID, 0)
@@ -61,13 +66,13 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
                 return
             }
 
-            val isNewVersion =
-                !packageInfo.versionName!!.lowercase().contains(hash.lowercase().trim())
-            val isIgnored = WppCore.getPrivString("ignored_version", "") == hash
+            val currentVersion = packageInfo.versionName ?: ""
+            val isNewVersion = !currentVersion.lowercase().contains(version.lowercase())
+            val isIgnored = WppCore.getPrivString("ignored_version", "") == version
 
             if (isNewVersion && !isIgnored) {
                 mActivity.runOnUiThread {
-                    showUpdateDialog(hash, changelog, publishedAt)
+                    showUpdateDialog(version, changelog, publishedAt)
                 }
             }
         } catch (e: Exception) {
@@ -75,7 +80,7 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
         }
     }
 
-    private fun showUpdateDialog(hash: String, changelog: String, publishedAt: String) {
+    private fun showUpdateDialog(version: String, changelog: String, publishedAt: String) {
         try {
             val markwon = Markwon.create(mActivity)
             val dialog = AlertDialogWpp(mActivity)
@@ -83,7 +88,7 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
             val formattedDate = formatPublishedDate(publishedAt)
 
             val message = buildString {
-                append("📦 **Version:** `").append(hash).append("`\n")
+                append("📦 **Version:** `").append(version).append("`\n")
                 if (formattedDate.isNotEmpty()) {
                     append("📅 **Released:** ").append(formattedDate).append("\n")
                 }
@@ -93,11 +98,11 @@ class UpdateChecker(private val mActivity: Activity) : Runnable {
             dialog.setTitle("🎉 New Update Available!")
             dialog.setMessage(markwon.toMarkdown(message))
             dialog.setNegativeButton("Ignore") { dialog, _ ->
-                WppCore.setPrivString("ignored_version", hash)
+                WppCore.setPrivString("ignored_version", version)
                 dialog.dismiss()
             }
             dialog.setPositiveButton("Update Now") { dialog, _ ->
-                Utils.openLink(mActivity, TELEGRAM_UPDATE_URL)
+                Utils.openLink(mActivity, UPDATE_URL)
                 dialog.dismiss()
             }
             dialog.show()
