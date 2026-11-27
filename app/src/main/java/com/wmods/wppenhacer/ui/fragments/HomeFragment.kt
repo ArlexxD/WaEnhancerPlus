@@ -126,7 +126,7 @@ class HomeFragment : BaseFragment() {
 
         binding.updateCard.setOnClickListener { view ->
             animateClick(view)
-            Utils.openLink(requireActivity(), "https://t.me/waenhancher")
+            Utils.openLink(requireActivity(), "https://github.com/ArlexxD/WaEnhancerPlus/releases/latest")
         }
 
         binding.diagBtn.setOnClickListener { view ->
@@ -517,7 +517,7 @@ class HomeFragment : BaseFragment() {
                     .build()
 
                 val request = Request.Builder()
-                    .url("https://api.github.com/repos/Waenhancer-Dev/WaEnhancer/releases/latest")
+                    .url("https://api.github.com/repos/ArlexxD/WaEnhancerPlus/releases/latest")
                     .build()
 
                 client.newCall(request).execute().use { response ->
@@ -529,17 +529,20 @@ class HomeFragment : BaseFragment() {
                     val body = response.body
                     val content = body.string()
                     val release = JSONObject(content)
-                    val tagName = release.optString("tag_name", "")
+                    val tagName = release.optString("tag_name", "").trim()
 
                     if (tagName.isBlank()) {
                         updateCardState(success = true, isUpToDate = true, newVersion = null)
                         return@use
                     }
 
-                    val parts = tagName.split("-")
-                    val hash = if (parts.size > 1) parts[1].trim() else ""
-                    val isNewVersion = hash.isNotEmpty() && !BuildConfig.VERSION_NAME.lowercase()
-                        .contains(hash.lowercase().trim())
+                    val versionToCheck = if (tagName.contains("-")) {
+                        tagName.substringAfter("-").trim()
+                    } else {
+                        tagName.removePrefix("v").removePrefix("V").trim()
+                    }
+                    val isNewVersion = versionToCheck.isNotEmpty() &&
+                        !BuildConfig.VERSION_NAME.lowercase().contains(versionToCheck.lowercase())
 
                     updateCardState(
                         success = true,
